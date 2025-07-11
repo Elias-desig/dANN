@@ -22,8 +22,7 @@ class dANN(nn.Module):
         x = F.relu(self.dendrites(x))
         x = F.relu(self.somas(x))
         logits = self.classifier(x)
-        out = F.softmax(logits, dim=1)
-        return out
+        return logits
 
     def apply_masks(self):
         with torch.no_grad():
@@ -32,7 +31,7 @@ class dANN(nn.Module):
 
 
 class vANN(nn.Module):
-    def __init__(self, image_size, num_dendrites, num_somas, num_out, type):
+    def __init__(self, image_size, num_dendrites, num_somas, num_out):
         super().__init__()
         self.dendrites = nn.Linear(image_size[0] * image_size[1], num_dendrites)
         self.somas = nn.Linear(num_dendrites, num_somas)
@@ -43,7 +42,6 @@ class vANN(nn.Module):
         x = F.relu(self.dendrites(x))
         x = F.relu(self.somas(x))
         logits = self.classifier(x)
-        out = F.softmax(logits, dim=1)
-        return out                           
+        return logits                           
 
 def count_parameters(model): return sum(p.numel() for p in model.parameters() if p.requires_grad)
