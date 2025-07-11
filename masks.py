@@ -41,11 +41,12 @@ def somatic_mask(num_dendritres, num_somas):
 
 
 
-def nb_vals(matrix, indices, size):
-    indices_ = tuple(np.transpose(np.atleast_2d(indices)))
+def nb_vals(matrix, index, size):
+
+    coords = np.unravel_index(index, matrix.shape)
     arr_shape = matrix.shape
     dist = np.ones(arr_shape)
-    dist[indices_] = 0
+    dist[coords] = 0
     dist = scn.distance_transform_cdt(dist, metric='chessboard')
     
     nb_indices = np.transpose(np.nonzero(dist <= size))
