@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 
-def train(model, dataloader, optimizer, device):
+def train(model, dataloader, optimizer, device, masked=True):
     model.train()
     loss_total = 0.0
 
@@ -20,7 +20,8 @@ def train(model, dataloader, optimizer, device):
         
         optimizer.step()  # Update the model parameters
         loss_total += loss.item()
-        model.apply_masks()
+        if masked:
+            model.apply_masks()
     return loss_total / len(dataloader)
 
 def test(model, dataloader, device):
