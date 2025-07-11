@@ -3,7 +3,7 @@ import scipy.ndimage as scn
 import torch
 
 def rf_mask(image_size, num_dendrites, type='local', rf_size=16):
-    seed = 0
+    seed = 1
     rng = np.random.default_rng(seed)
     layer_size = image_size[0]*image_size[1]
     mask = np.zeros(shape=(num_dendrites, layer_size))
