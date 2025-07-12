@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import scipy.ndimage as scn
 import torch
 
@@ -7,7 +8,7 @@ def rf_mask(image_size, num_dendrites, num_somas, type='local', rf_size=16):
     rng = np.random.default_rng(seed)
     layer_size = image_size[0]*image_size[1]
     mask = np.zeros(shape=(num_dendrites, layer_size))
-    connectivity = num_dendrites // num_somas
+    connectivity = math.ceil(num_dendrites / num_somas)
     if type == 'local':
         image =  np.arange(layer_size).reshape((image_size[0], image_size[1]))
         centers = rng.choice(layer_size, num_dendrites, replace=True)
@@ -19,29 +20,37 @@ def rf_mask(image_size, num_dendrites, num_somas, type='local', rf_size=16):
                     nb = nb_vals(image, center,  (rf_size // 8) + counter)
                     counter += 1
             synapses = rng.choice(nb, rf_size)
-            flat_indices = np.ravel_multi_index((synapses[:, 0], synapses[:, 1]), (28, 28))
+            flat_indices = np.ravel_multi_index((synapses[:, 0], synapses[:, 1]), (image_size[0], image_size[1]))
             mask[i, flat_indices] = 1
         
     elif type == 'global':
-        image =  np.arange(layer_size).reshape((image_size[0], image_size[1]))
-        center_centers = rng.choice(layer_size, num_somas)
-        for soma_id, c_c in enumerate(center_centers):
-            glob_nb = nb_vals(image, c_c, rf_size // 4)
+        image = np.arange(layer_size).reshape(image_size)
+        # one distinct region‐center per soma
+        centers = rng.choice(layer_size, num_somas, replace=False)
+        somatic_nbs = []
+        for i in range(num_somas):
+            somatic_nbs.append(nb_vals(image, centers[i], 4))
             counter = 1
-            while len(glob_nb) < connectivity:
-                glob_nb = nb_vals(image, c_c, (rf_size // 4) + counter)
-                counter += 1
-            dendrite_centers = rng.choice(glob_nb, connectivity, replace=True)
-            for i, center in enumerate(dendrite_centers):
-                nb = nb_vals(image, center, rf_size // 8)
-                if len(nb) < rf_size:
-                    counter = 1
-                    while len(nb) < rf_size:
-                        nb = nb_vals(image, center,  (rf_size // 8) + counter)
-                        counter += 1
-                synapses = rng.choice(nb, rf_size)
-                flat_indices = np.ravel_multi_index((synapses[:, 0], synapses[:, 1]), (28, 28))
-                mask[i + soma_id, flat_indices] = 1                            
+            while len(somatic_nbs[i]) < 81:
+                somatic_nbs[i] = nb_vals(image, centers[i],  4 + counter)
+                counter += 1            
+        for i in range(num_dendrites):
+            soma_id = min(i // connectivity, num_somas - 1)
+            glob_nb = somatic_nbs[soma_id]
+            idx = rng.integers(len(glob_nb))
+            centre_coord = glob_nb[idx]
+            centre_flat  = np.ravel_multi_index(tuple(centre_coord), image_size) 
+            nb = nb_vals(image, centre_flat, rf_size // 8)
+    
+            counter = 1
+            while len(nb) < rf_size:
+                nb = nb_vals(image, centre_flat,  (rf_size // 8) + counter)
+                counter += 1            
+            synapses = rng.choice(nb, rf_size)
+            flat_indices = np.ravel_multi_index((synapses[:, 0], synapses[:, 1]), (image_size[0], image_size[1]))
+            mask[i, flat_indices] = 1
+        
+                                      
     elif type == 'random':
         for i in range(num_dendrites):
             ids = rng.choice(layer_size, rf_size, replace=False)
@@ -52,7 +61,7 @@ def rf_mask(image_size, num_dendrites, num_somas, type='local', rf_size=16):
     return torch.from_numpy(mask)
 
 def somatic_mask(num_dendrites, num_somas):
-    connectivity = num_dendrites // num_somas
+    connectivity = math.ceil(num_dendrites / num_somas)
     mask = np.zeros(shape=(num_somas, num_dendrites))
     for i in range(num_somas):
         mask[i, i * connectivity: i * connectivity + connectivity] = 1

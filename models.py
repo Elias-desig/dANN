@@ -8,7 +8,7 @@ class dANN(nn.Module):
     def __init__(self, image_size, num_dendrites, num_somas, num_out, type):
         super().__init__()
         self.dendrites = nn.Linear(image_size[0] * image_size[1], num_dendrites)
-        self.register_buffer('rf_mask', rf_mask(image_size, num_dendrites, type=type).to(self.dendrites.weight.dtype))
+        self.register_buffer('rf_mask', rf_mask(image_size, num_dendrites, num_somas, type=type).to(self.dendrites.weight.dtype))
         self.dendrites.weight.data = self.dendrites.weight.data * self.rf_mask
 
         self.somas = nn.Linear(num_dendrites, num_somas)
