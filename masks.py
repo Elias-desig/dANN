@@ -26,7 +26,7 @@ def rf_mask(image_size, num_dendrites, num_somas, type='local', rf_size=16):
     elif type == 'global':
         image = np.arange(layer_size).reshape(image_size)
         # one distinct region‐center per soma
-        centers = rng.choice(layer_size, num_somas, replace=False)
+        centers = rng.choice(layer_size, num_somas, replace=True)
         somatic_nbs = []
         for i in range(num_somas):
             somatic_nbs.append(nb_vals(image, centers[i], 4))
