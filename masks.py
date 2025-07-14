@@ -5,7 +5,7 @@ import torch
 
 def rf_mask(image_size, num_dendrites, num_somas, type='local', rf_size=16):
     seed = 1
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng()
     layer_size = image_size[0]*image_size[1]
     mask = np.zeros(shape=(num_dendrites, layer_size))
     connectivity = math.ceil(num_dendrites / num_somas)

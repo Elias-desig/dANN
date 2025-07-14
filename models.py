@@ -49,7 +49,7 @@ class vANN(nn.Module):
 def count_parameters(model): return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def save_checkpoint(model, optimizer, epoch, loss, num_dendrites, num_somas, dendritic, rf_type=None, accuracy=None, image_size=(28, 28), num_out=10):
+def save_checkpoint(model, optimizer, epoch, loss, num_dendrites, num_somas, dendritic, regularized, rf_type=None, accuracy=None, image_size=(28, 28), num_out=10):
     base_dir = './models'
     sub_dir = 'dendritic' if dendritic else 'vanilla'
     checkpoint_dir = os.path.join(base_dir, sub_dir)
@@ -76,5 +76,5 @@ def save_checkpoint(model, optimizer, epoch, loss, num_dendrites, num_somas, den
     }
 
     # Save checkpoint
-    filename = f"{'dANN' if dendritic else 'vANN'}_checkpoint_{checkpoint['timestamp']}_{checkpoint['accuracy']}.pt"
+    filename = f"{'dANN' if dendritic else 'vANN'}_checkpoint_{checkpoint['timestamp']}_{checkpoint['epoch']}.pt"
     torch.save(checkpoint, os.path.join(checkpoint_dir, filename))

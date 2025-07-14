@@ -1,3 +1,6 @@
 *.gz
 *.pyc
+*.pt
+*.html
+*.pdf
 data/
